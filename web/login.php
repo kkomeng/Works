@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   //3.データーベースに照合
     $pdo = connect_db();
 
-    $sql = "SELECT id, user_no, name FROM user WHERE user_no = :user_no AND password = :password LIMIT 1";
+    $sql = "SELECT id, user_no, name, auth_type FROM user WHERE user_no = :user_no AND password = :password LIMIT 1";
     $stmt = $pdo->prepare($sql);
     $stmt->bindValue(':user_no', $user_no, PDO::PARAM_STR);
     $stmt->bindValue(':password', $password, PDO::PARAM_STR);
