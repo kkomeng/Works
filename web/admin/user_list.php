@@ -1,3 +1,24 @@
+<?php
+require_once(dirname(__FILE__).'/../../config/config.php');
+require_once(dirname(__FILE__).'/../functions.php');
+
+session_start();
+
+if(!isset($_SESSION['USER']) || $_SESSION['USER']['auth_type'] != 1) {
+  // if(isset($_SESSION['USER'])) {
+    //ログインされていない場合はログイン画面へ
+    header('Location: ./login.php');
+    exit;
+  }
+
+$pdo = connect_db();
+
+$sql = "SELECT * FROM user";
+$stmt = $pdo->query($sql);
+$user_list = $stmt->fetchAll();
+
+?>
+
 <!doctype html>
 <html lang="ja">
 
@@ -32,13 +53,17 @@
         <tr class="bg-light">
           <th scope="col">社員番号</th>
           <th scope="col">社員名</th>
+          <th scope="col">権限</th>
         </tr>
       </thead>
       <tbody>
+        <?php foreach ($user_list as $user): ?>
         <tr>
-          <th scope="row">1</th>
-          <td><a href="./user_result.php">ダミー</a></td>
+          <td scope="row"><?= $user['user_no'] ?></td>
+          <td><a href="./user_result.php?id=<?= $user['id'] ?>"><?= $user['name'] ?></a></td>
+          <td scope="row"><?php if($user['auth_type'] == 1) echo '管理者' ?></td>
         </tr>
+        <?php endforeach ?>
       </tbody>
     </table>
   </form>

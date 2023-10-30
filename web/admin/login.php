@@ -7,7 +7,7 @@ session_start();
 if(isset($_SESSION['USER']) && $_SESSION['USER']['auth_type'] == 1) {
 // if(isset($_SESSION['USER'])) {
   //ログイン済の場合はHOME画面へ
-  header('Location: /admin/user_list.php');
+  header('Location: ./user_list.php');
   exit;
 }
 
