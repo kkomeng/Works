@@ -2,21 +2,25 @@
 require_once(dirname(__FILE__).'/../../config/config.php');
 require_once(dirname(__FILE__).'/../functions.php');
 
-session_start();
+try {
+  session_start();
 
-if(!isset($_SESSION['USER']) || $_SESSION['USER']['auth_type'] != 1) {
-  // if(isset($_SESSION['USER'])) {
-    //ログインされていない場合はログイン画面へ
-    header('Location: ./login.php');
+  if(!isset($_SESSION['USER']) || $_SESSION['USER']['auth_type'] != 1) {
+    // if(isset($_SESSION['USER'])) {
+      //ログインされていない場合はログイン画面へ
+      header('Location: ./login.php');
+      exit;
+    }
+
+  $pdo = connect_db();
+
+  $sql = "SELECT * FROM user";
+  $stmt = $pdo->query($sql);
+  $user_list = $stmt->fetchAll();
+  } catch (Exception $e) {
+    header('Location: ../error.php');
     exit;
   }
-
-$pdo = connect_db();
-
-$sql = "SELECT * FROM user";
-$stmt = $pdo->query($sql);
-$user_list = $stmt->fetchAll();
-
 ?>
 
 <!doctype html>

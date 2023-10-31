@@ -2,62 +2,70 @@
 require_once(dirname(__FILE__).'/../config/config.php');
 require_once(dirname(__FILE__).'/functions.php');
 
-session_start();
+try {
+  session_start();
 
-if(isset($_SESSION['USER'])) {
-  //ログイン済の場合はHOME画面へ
-  header('Location: ./login.php');
+  if(isset($_SESSION['USER'])) {
+    //ログイン済の場合はHOME画面へ
+    header('Location: ./login.php');
+    exit;
+  }
+
+  if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    //POST処理時
+
+    //1.入力値を取得
+    $user_no = $_POST['user_no'];
+    $password = $_POST['password'];
+
+    //2.バリデーションチェック
+    $err = array();
+
+    if(!$user_no) {
+      $err['user_no'] = '社員番号を入力してください。';
+    } elseif (!preg_match('/^[0-9]+$/',$user_no)) {
+      $err['user_no'] = '社員番号を正しく入力してください。';
+    } elseif (mb_strlen($user_no, 'utf-8') > 20) {
+      $err['user_no'] = '社員番号が長すぎます。';
+    }
+
+    if(!$password) {
+      $err['password'] = 'パスワードを入力してください。';
+    } 
+      
+
+    if(empty($err)) {
+    //3.データーベースに照合
+      $pdo = connect_db();
+
+      $sql = "SELECT id, user_no, name, auth_type FROM user WHERE user_no = :user_no AND password = :password LIMIT 1";
+      $stmt = $pdo->prepare($sql);
+      $stmt->bindValue(':user_no', $user_no, PDO::PARAM_STR);
+      $stmt->bindValue(':password', $password, PDO::PARAM_STR);
+      $stmt->execute();
+      $user = $stmt->fetch();
+
+    if ($user) {
+      //4.ログイン処理（セッションに保存）
+        $_SESSION['USER'] = $user;
+
+      //5.HOME画面へ遷移
+      header('Location: ./index.php');
+      exit;
+
+    } else {
+      $err['password'] = '認証に失敗しました。';
+    }
+  }
+  } else {
+    //画面初回アクセス時
+    $user_no = "";
+    $password = "";
+  }
+} catch (Exception $e) {
+  header('Location: ./error.php');
   exit;
 }
-
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-  //POST処理時
-
-  //1.入力値を取得
-  $user_no = $_POST['user_no'];
-  $password = $_POST['password'];
-
-  //2.バリデーションチェック
-  $err = array();
-
-  if(!$user_no) {
-    $err['user_no'] = '社員番号を入力してください。';
-  }
-
-  if(!$password) {
-    $err['password'] = 'パスワードを入力してください。';
-  }
-    
-
-  if(empty($err)) {
-  //3.データーベースに照合
-    $pdo = connect_db();
-
-    $sql = "SELECT id, user_no, name, auth_type FROM user WHERE user_no = :user_no AND password = :password LIMIT 1";
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindValue(':user_no', $user_no, PDO::PARAM_STR);
-    $stmt->bindValue(':password', $password, PDO::PARAM_STR);
-    $stmt->execute();
-    $user = $stmt->fetch();
-
-  if ($user) {
-    //4.ログイン処理（セッションに保存）
-      $_SESSION['USER'] = $user;
-
-    //5.HOME画面へ遷移
-    header('Location: ./index.php');
-    exit;
-
-  } else {
-    $err['password'] = '認証に失敗しました。';
-  }
-}
-} else {
-  //画面初回アクセス時
-  $user_no = "";
-  $password = "";
-}
-
 ?>
 
 <!doctype html>
@@ -85,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <form class="border rounded bg-white form-login" method="post">
     <h1 class="h3 my-3">Login</h1>
     <div class="form-group pt-3">
-      <input type="text" class="form-control rounded-pill <?php if (isset($err['user_no'])) echo 'is-invalid'; ?>" name="user_no" value="<?= $user_no ?>" placeholder="社員番号">
+      <input type="text" class="form-control rounded-pill <?php if (isset($err['user_no'])) echo 'is-invalid'; ?>" name="user_no" value="<?= $user_no ?>" placeholder="社員番号" required>
       <div class="invalid-feedback"><?= $err['user_no'] ?></div>
     </div>
     <div class="form-group">
