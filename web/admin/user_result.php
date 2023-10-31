@@ -115,7 +115,7 @@ try {
     }
 
     // 今月～過去12ヶ月の範囲内かどうか
-    $check_date = new DateTime($yyyymm.'-01');
+    $check_date = new DateTime($yyyymm . '-01');
     $start_date = new DateTime('first day of -11 month 00:00');
     $end_date = new DateTime('first day of this month 00:00');
 
@@ -186,7 +186,7 @@ try {
       </select>
     </div>
     <div class="float-right">
-          <a href="./user_list.php"><button type="button" class="btn btn-secondary rounded-pill px-5">社員一覧に戻る</button></a>
+      <a href="./user_list.php"><button type="button" class="btn btn-secondary rounded-pill px-5">社員一覧に戻る</button></a>
     </div>
 
     <table class="table table-success">
@@ -242,7 +242,11 @@ try {
               <?= $break_time ?>
             </td>
             <td>
-              <?= $comment ?>
+              <?= h($comment) ?>
+            </td>
+            <td class="d-none">
+              <?= h($comment_long) ?>
+            </td>
             </td>
             <td><button type="button" class="btn btn-default h-auto ph-0" data-toggle="modal" data-target="#inputModal"
                 data-day="<?= $yyyymm . '-' . sprintf('%02d', $i) ?>"><i class="fas fa-pencil-alt"></i></button></td>
@@ -275,10 +279,8 @@ try {
               <div class="row">
                 <div class="col-sm">
                   <div class="input-group">
-                    <input type="text"
-                      class="form-control<?php if (isset($err['modal_start_time']))
-                        echo ' is-invalid'; ?>"
-                      placeholder="出勤" id="modal_start_time" name="modal_start_time"
+                    <input type="text" class="form-control<?php if (isset($err['modal_start_time']))
+                      echo ' is-invalid'; ?>" placeholder="出勤" id="modal_start_time" name="modal_start_time"
                       value="<?= format_time($modal_start_time) ?>" required>
                     <div class="input-group-prepend">
                       <button type="button" class="input-group-text" id="start_btn">打刻</button>
@@ -290,10 +292,8 @@ try {
                 </div>
                 <div class="col-sm">
                   <div class="input-group">
-                    <input type="text"
-                      class="form-control<?php if (isset($err['modal_end_time']))
-                        echo ' is-invalid'; ?>"
-                      placeholder="退勤" id="modal_end_time" name="modal_end_time"
+                    <input type="text" class="form-control<?php if (isset($err['modal_end_time']))
+                      echo ' is-invalid'; ?>" placeholder="退勤" id="modal_end_time" name="modal_end_time"
                       value="<?= format_time($modal_end_time) ?>">
                     <div class="input-group-prepend">
                       <button type="button" class="input-group-text" id="end_btn">打刻</button>
@@ -304,10 +304,8 @@ try {
                   </div>
                 </div>
                 <div class="col-sm">
-                  <input type="text"
-                    class="form-control<?php if (isset($err['modal_break_time']))
-                      echo ' is-invalid'; ?>"
-                    placeholder="休憩" id="modal_break_time" name="modal_break_time"
+                  <input type="text" class="form-control<?php if (isset($err['modal_break_time']))
+                    echo ' is-invalid'; ?>" placeholder="休憩" id="modal_break_time" name="modal_break_time"
                     value="<?= format_time($modal_break_time) ?>">
                   <div class="invalid-feedback">
                     <?= $err['modal_break_time'] ?>
@@ -316,8 +314,8 @@ try {
               </div>
               <div class="form-group pt-3">
                 <textarea class="form-control<?php if (isset($err['modal_comment']))
-                  echo ' is-invalid'; ?>"
-                  id="modal_comment" name="modal_comment" rows="5" placeholder="業務内容"><?= $modal_comment ?></textarea>
+                  echo ' is-invalid'; ?>" id="modal_comment" name="modal_comment" rows="5"
+                  placeholder="業務内容"><?= $modal_comment ?></textarea>
                 <div class="invalid-feedback">
                   <?= $err['modal_comment'] ?>
                 </div>

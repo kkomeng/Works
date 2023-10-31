@@ -14,6 +14,8 @@ try {
   if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     //POST処理時
 
+    check_token();
+
     //1.入力値を取得
     $user_no = $_POST['user_no'];
     $password = $_POST['password'];
@@ -38,14 +40,13 @@ try {
     //3.データーベースに照合
       $pdo = connect_db();
 
-      $sql = "SELECT id, user_no, name, auth_type FROM user WHERE user_no = :user_no AND password = :password LIMIT 1";
+      $sql = "SELECT * FROM user WHERE user_no = :user_no LIMIT 1";
       $stmt = $pdo->prepare($sql);
       $stmt->bindValue(':user_no', $user_no, PDO::PARAM_STR);
-      $stmt->bindValue(':password', $password, PDO::PARAM_STR);
       $stmt->execute();
       $user = $stmt->fetch();
 
-    if ($user) {
+    if ($user && password_verify($password, $user['password'])) {
       //4.ログイン処理（セッションに保存）
         $_SESSION['USER'] = $user;
 
@@ -61,6 +62,8 @@ try {
     //画面初回アクセス時
     $user_no = "";
     $password = "";
+
+    set_token();
   }
 } catch (Exception $e) {
   header('Location: ./error.php');
@@ -102,11 +105,7 @@ try {
     </div>
     <!-- <button type="submit" class="btn btn-primary text-white rounded-pill px-5 my-4">ログイン</button> -->
     <input type="submit" class="btn btn-primary rounded-pill px-5 my-4" value="ログイン">
-    <!-- <div>for debug use:<br>
-    $user_no=<?=$user_no ?><br>
-    $password=<?=$password?><br>
-    $err=<?=var_dump($err)?>
-    </div> -->
+    <input type="hidden" name="CSRF_TOKEN" value="<?= $_SESSION['CSRF_TOKEN'] ?>">
   </form>
 
   <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
