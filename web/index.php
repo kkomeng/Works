@@ -7,8 +7,7 @@ try {
 
   if (!isset($_SESSION['USER'])) {
     //ログインされていない場合はログイン画面へ
-    header('Location: ./login.php');
-    exit;
+    redirect('./login.php');
   }
 
   //ログインユーザーの情報をセッションから取得
@@ -18,6 +17,7 @@ try {
 
   $err = array();
 
+  // 処理対象の日付
   $target_date = date('Y-m-d');
 
   // モーダルの自動表示判定
@@ -36,19 +36,19 @@ try {
     // 出勤時間の必須／形式チェック
     if (!$modal_start_time) {
       $err['modal_start_time'] = '出勤時間を入力してください。';
-    } elseif (!preg_match('/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/', $modal_start_time)) {
+    } elseif (!check_time_format($modal_start_time)) {
       $modal_start_time = '';
       $err['modal_start_time'] = '出勤時間を正しく入力してください。';
     }
 
     // 退勤時間の形式チェック
-    if (!preg_match('/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/', $modal_end_time)) {
+    if (!check_time_format($modal_end_time)) {
       $modal_end_time = '';
       $err['modal_end_time'] = '退勤時間を正しく入力してください。';
     }
 
     // 休憩時間の形式チェック
-    if (!preg_match('/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/', $modal_break_time)) {
+    if (!check_time_format($modal_break_time)) {
       $modal_break_time = '';
       $err['modal_break_time'] = '休憩時間を正しく入力してください。';
     }
@@ -88,10 +88,6 @@ try {
         $stmt->bindValue(':end_time', $modal_end_time, PDO::PARAM_STR);
         $stmt->bindValue(':break_time', $modal_break_time, PDO::PARAM_STR);
         $stmt->bindValue(':comment', $modal_comment, PDO::PARAM_STR);
-        // //debug use: START
-        // echo '$target_date: '."{$target_date}<br>";
-        // exit();
-        // //debug use: END
         $stmt->execute();
       }
       $modal_view_flg = FALSE;
@@ -124,7 +120,7 @@ try {
 
   }
 
-  //2.ユーザーの業務日報データを取得
+  //ユーザーの業務日報データを取得
   if (isset($_GET['m'])) {
     $yyyymm = $_GET['m'];
     $day_count = date('t', strtotime($yyyymm));
@@ -152,12 +148,16 @@ try {
     $day_count = date('t');
   }
 
+  // 指定年月の勤怠データを取得
   $sql = "SELECT date, id, start_time, end_time, break_time, comment FROM work WHERE user_id = :user_id AND DATE_FORMAT(date, '%Y-%m') = :date";
   $stmt = $pdo->prepare($sql);
   $stmt->bindValue(':user_id', (int) $session_user['id'], PDO::PARAM_INT);
   $stmt->bindValue(':date', $yyyymm, PDO::PARAM_STR);
   $stmt->execute();
   $work_list = $stmt->fetchAll(PDO::FETCH_UNIQUE);
+
+  $page_title = '日報登録';
+
 } catch (Exception $e) {
   header('Location: ./error.php');
   exit;
@@ -167,31 +167,11 @@ try {
 <!doctype html>
 <html lang="ja">
 
-<head>
-  <!-- Required meta tags -->
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
-    integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-
-  <!-- fontawesome -->
-  <!-- <link href="./lib/fontawesome-free-5.15.1-web/css/all/css" rel="stylesheet"> -->
-  <script src="https://kit.fontawesome.com/729985a503.js" crossorigin="anonymous"></script>
-
-
-  <!-- Original CSS -->
-  <link rel="stylesheet" href="./css/style.css">
-
-  <title>日報登録 | WoRKS</title>
-</head>
+<?php include('../templates/head_tag.php') ?>
 
 <body class="text-center bg-secondary">
 
-  <div>
-    <img class="mb-4" src="./img/logo.svg" alt="WoRKS" width="80" height="80">
-  </div>
+<?php include('../templates/header.php') ?>
 
   <form class="border rounded bg-white form-time-table" action="index.php">
     <h1 class="h3 my-3">月別リスト</h1>
@@ -347,9 +327,6 @@ try {
     <input type="hidden" id="target_date" name="target_date">
   </form>
 
-  <!-- Optional JavaScript; choose one of the two! -->
-
-  <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
     integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
     crossorigin="anonymous"></script>
@@ -404,12 +381,5 @@ try {
       $('#modal_comment').removeClass('is-invalid')
     })
   </script>
-
-  <!-- Option 2: jQuery, Popper.js, and Bootstrap JS
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js" integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s" crossorigin="anonymous"></script>
-    -->
 </body>
-
 </html>

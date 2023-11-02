@@ -49,4 +49,19 @@ function check_token() {
   }
 }
 
+// 時間の形式チェックを行う
+function check_time_format($time) {
+  if (preg_match('/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/', $time)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+// 指定されたPHPへリダイレクトする
+function redirect($path) {
+  unset($pdo);
+  header('Location:'.$path);
+}
+
 ?> 
