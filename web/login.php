@@ -7,7 +7,7 @@ try {
 
   if(isset($_SESSION['USER'])) {
     //ログイン済の場合はHOME画面へ
-    header('Location: ./login.php');
+    header('Location: ./index.php');
     exit;
   }
 
@@ -34,7 +34,6 @@ try {
     if(!$password) {
       $err['password'] = 'パスワードを入力してください。';
     } 
-      
 
     if(empty($err)) {
     //3.データーベースに照合
@@ -46,7 +45,8 @@ try {
       $stmt->execute();
       $user = $stmt->fetch();
 
-    if ($user && password_verify($password, $user['password'])) {
+    // if ($user && password_verify($password, $user['password'])) {
+    if ($user && $password == $user['password']) {
       //4.ログイン処理（セッションに保存）
         $_SESSION['USER'] = $user;
 
